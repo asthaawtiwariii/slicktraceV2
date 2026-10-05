@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   Ship, 
   FileCheck, 
@@ -7,12 +7,14 @@ import {
   RefreshCw,
   Eye,
   FileSpreadsheet,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Upload
 } from 'lucide-react';
 import { useIncident } from '../context/IncidentContext';
 import { NauticalMap } from '../components/map/NauticalMap';
 import { SpeedAnomalyChart } from '../components/charts/SpeedAnomalyChart';
 import { VesselInspectModal } from '../components/common/VesselInspectModal';
+import { api } from '../services/api';
 
 export const AttributionPage: React.FC = () => {
   const { 
@@ -30,6 +32,8 @@ export const AttributionPage: React.FC = () => {
   const [vesselFilter, setVesselFilter] = useState<'all' | 'tanker' | 'cargo'>('all');
   const [spatialRadius, setSpatialRadius] = useState(25);
   const [temporalHours, setTemporalHours] = useState(4);
+  const [isUploadingAIS, setIsUploadingAIS] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const currentVessel = selectedVessel || activeIncident.vessels[0];
 
@@ -38,6 +42,25 @@ export const AttributionPage: React.FC = () => {
     if (vesselFilter === 'cargo') return v.type.toLowerCase().includes('cargo') || v.type.toLowerCase().includes('carrier');
     return true;
   });
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingAIS(true);
+    showToast(`Uploading and parsing ${file.name} into DuckDB...`);
+    try {
+      const res = await api.uploadAisCsv(file);
+      showToast(`✓ Ingested ${res.records_ingested} real AIS records (${res.unique_vessels_in_db} vessels in DuckDB)`);
+      runFullPipeline();
+    } catch (err) {
+      console.error(err);
+      showToast("Error uploading AIS CSV. Please ensure standard CSV columns.");
+    } finally {
+      setIsUploadingAIS(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const handleExportAIS = () => {
     const csvRows = activeIncident.vessels.map((v) => ({
@@ -58,6 +81,15 @@ export const AttributionPage: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-4">
+      {/* Hidden File Input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".csv,.txt"
+        onChange={handleFileUpload}
+        className="hidden"
+      />
+
       {/* Page Header */}
       <div className="bg-white dark:bg-[#131D31] border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
@@ -75,7 +107,17 @@ export const AttributionPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex items-center gap-2 text-xs flex-wrap">
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploadingAIS}
+            type="button"
+            className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs transition disabled:opacity-50"
+          >
+            <Upload className="w-3.5 h-3.5" />
+            <span>{isUploadingAIS ? 'Ingesting CSV...' : 'Upload Real AIS CSV'}</span>
+          </button>
+
           <button
             onClick={handleExportAIS}
             type="button"
@@ -105,6 +147,7 @@ export const AttributionPage: React.FC = () => {
           </button>
         </div>
       </div>
+
 
       {/* Main Grid: Suspect Leaderboard + Map + Vessel Forensic Inspector */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">

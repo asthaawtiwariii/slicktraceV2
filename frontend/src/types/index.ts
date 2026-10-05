@@ -4,6 +4,66 @@ export type PageId = 'dashboard' | 'detection' | 'drift' | 'attribution' | 'repo
 
 export type BasemapId = 'dark' | 'satellite' | 'nautical' | 'topo' | 'voyager';
 
+export type SatelliteLayerId = 
+  | 'none'
+  | 'nasa-gibs-modis-terra'
+  | 'nasa-gibs-viirs-snpp'
+  | 'nasa-gibs-viirs-dnb'
+  | 'nasa-gibs-chlorophyll'
+  | 'nasa-gibs-thermal-anomalies'
+  | 'sentinel-2-cloudless';
+
+export interface STACSceneItem {
+  id: string;
+  collection: string;
+  platform: string;
+  datetime: string;
+  bbox: [number, number, number, number];
+  geometry: Record<string, unknown>;
+  thumbnail_url?: string;
+  cloud_cover?: number;
+  orbit_direction?: string;
+  relative_orbit?: number;
+  polarization?: string;
+  resolution_meters?: number;
+  instrument_mode?: string;
+  assets_count: number;
+  downloadable_preview?: string;
+}
+
+export interface STACSearchRequest {
+  bbox?: [number, number, number, number];
+  point?: [number, number];
+  start_date?: string;
+  end_date?: string;
+  collections?: string[];
+  sensor_type?: string;
+  max_cloud_cover?: number;
+  limit?: number;
+}
+
+export interface SatelliteLayerConfig {
+  id: string;
+  name: string;
+  provider: string;
+  url_template: string;
+  format: string;
+  layer_type: string;
+  description: string;
+  default_opacity: number;
+  has_date_dimension: boolean;
+}
+
+export interface MaritimeHotspot {
+  id: string;
+  name: string;
+  center: [number, number];
+  bbox: [number, number, number, number];
+  description: string;
+  preferred_sensor: string;
+  primary_threat: string;
+}
+
 export type GeoPoint = [number, number]; // [lat, lon]
 
 export type StakeholderType = 'authorities' | 'environment' | 'public' | 'legal';

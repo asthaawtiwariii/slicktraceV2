@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from typing import Dict, Any, Optional
 from ..schemas import DetectionRequest, DetectionResponse, AlertDispatchRequest, AlertDispatchResponse
 from ..services.detection_service import DetectionService
@@ -7,7 +7,36 @@ from ..services.alert_service import AlertService
 
 router = APIRouter(prefix="/api/detection", tags=["Satellite Detection"])
 
+@router.post("/analyze-upload")
+async def analyze_uploaded_satellite_image(
+    file: UploadFile = File(...),
+    center_lat: float = Form(28.380),
+    center_lon: float = Form(-89.920),
+    pixel_res_m: float = Form(10.0),
+    confidence_threshold: float = Form(75.0)
+):
+    """
+    Processes a real uploaded satellite image/tile (PNG, JPG, TIFF)
+    and extracts dark-spot oil slick boundaries, BAOAC classification, and area.
+    """
+    if not file:
+        raise HTTPException(status_code=400, detail="No image file provided")
+
+    raw_bytes = await file.read()
+    try:
+        result = DetectionService.process_uploaded_image(
+            file_bytes=raw_bytes,
+            center_lat=center_lat,
+            center_lon=center_lon,
+            pixel_res_m=pixel_res_m,
+            confidence_threshold=confidence_threshold
+        )
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=422, detail=f"Image processing error: {str(e)}")
+
 @router.post("/process", response_model=DetectionResponse)
+
 def process_satellite_imagery(request: DetectionRequest):
     """
     Triggers AI Vision pipeline on SAR/Optical imagery:

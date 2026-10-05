@@ -131,8 +131,8 @@ def seed_sample_cadastre_data(conn):
     """, records)
 
 def seed_sample_incidents(conn):
-    conn.execute("""
-        INSERT INTO incidents VALUES (
+    incidents_data = [
+        (
             'INC-GOM-2024-08',
             'SPILL-DELTA-08 (Mississippi Canyon Block 42)',
             'Gulf of Mexico — EEZ Sector 4',
@@ -143,9 +143,94 @@ def seed_sample_incidents(conn):
             '10m Spatial Resolution (VV+VH)',
             28.38, -89.92,
             48.3, 38.6,
-            1250, 34,
+            1250.0, 34.0,
             94.2, 25.8,
             28.465, -90.155,
             '2024-11-24 12:30 UTC'
-        );
-    """)
+        ),
+        (
+            'INC-REAL-WAKASHIO',
+            'MV WAKASHIO Coral Reef Grounding (Pointe d''Esny)',
+            'Mauritius — Blue Bay Marine Reserve',
+            'Enforcement Dispatched',
+            '2020-08-10 14:15 UTC',
+            'Sentinel-1B SAR + Sentinel-2B MSI',
+            'Ascending Pass #078 (IW Polarimetric)',
+            '10m Spatial Resolution (VV/VH Calibrated)',
+            -20.443, 57.747,
+            32.4, 28.5,
+            1000.0, 18.0,
+            98.5, 30.5,
+            -20.440, 57.745,
+            '2020-08-06 15:30 UTC'
+        ),
+        (
+            'INC-REAL-TOBAGO',
+            'Mystery Barge GULFSTREAM 150km Transboundary Spill',
+            'Tobago & Caribbean Sea — Cove Eco-Industrial Sector',
+            'Under Investigation',
+            '2024-02-07 22:15 UTC',
+            'Sentinel-1A (SAR C-Band GRD)',
+            'Descending Pass #112',
+            '10m Spatial Resolution',
+            11.148, -60.778,
+            85.6, 154.2,
+            5500.0, 42.0,
+            96.8, 38.0,
+            10.850, -60.950,
+            '2024-02-05 06:00 UTC'
+        ),
+        (
+            'INC-REAL-VENTANILLA',
+            'MARE DORICUM / La Pampilla Terminal Crude Discharge',
+            'Peru — Callao / Ventanilla Marine Reserve',
+            'Dossier Prepared',
+            '2022-01-16 11:40 UTC',
+            'Sentinel-1 SAR + Sentinel-2 L2A',
+            'Ascending Pass #034',
+            '10m Spatial Resolution (VV+VH)',
+            -11.928, -77.162,
+            58.2, 49.0,
+            1890.0, 22.0,
+            97.4, 32.5,
+            -11.932, -77.168,
+            '2022-01-15 22:30 UTC'
+        ),
+        (
+            'INC-REAL-RUBYMAR',
+            'MV RUBYMAR Sinking & 29-Mile Red Sea Oil Slick',
+            'Red Sea — Bab-el-Mandeb Strait & Hanish Islands',
+            'Critical Alert',
+            '2024-02-28 07:30 UTC',
+            'Sentinel-2 MSI + Sentinel-1 SAR',
+            'Descending Pass #056',
+            '10m Spatial Resolution (NDWI + SAR)',
+            13.720, 42.750,
+            64.5, 78.4,
+            2400.0, 28.0,
+            95.1, 28.0,
+            13.650, 42.820,
+            '2024-02-19 18:00 UTC'
+        ),
+        (
+            'INC-MALACCA-2024-03',
+            'SPILL-STRAIT-03 (One Fathom Bank West TSS)',
+            'Strait of Malacca — TSS Traffic Separation Scheme',
+            'Under Investigation',
+            '2024-10-14 06:15 UTC',
+            'Sentinel-1A (SAR C-Band GRD)',
+            'Descending Pass #089',
+            '10m Spatial Resolution',
+            2.880, 101.020,
+            26.4, 24.2,
+            680.0, 19.0,
+            91.0, 18.4,
+            2.980, 100.860,
+            '2024-10-13 11:15 UTC'
+        )
+    ]
+
+    conn.executemany("""
+        INSERT INTO incidents VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, incidents_data)
+

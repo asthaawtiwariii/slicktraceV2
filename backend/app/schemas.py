@@ -15,6 +15,57 @@ class PreprocessingMetrics(BaseModel):
     resolution_meters: float = 10.0
     georeferenced_crs: str = "EPSG:4326 (WGS84)"
 
+class STACSearchRequest(BaseModel):
+    bbox: Optional[List[float]] = None
+    point: Optional[Tuple[float, float]] = None
+    start_date: Optional[str] = None
+    end_date: Optional[str] = None
+    collections: Optional[List[str]] = ["sentinel-1-grd", "sentinel-2-l2a"]
+    sensor_type: Optional[str] = None
+    max_cloud_cover: Optional[float] = 30.0
+    limit: Optional[int] = 10
+
+class STACSceneItem(BaseModel):
+    id: str
+    collection: str
+    platform: str
+    datetime: str
+    bbox: List[float]
+    geometry: Dict[str, Any]
+    thumbnail_url: Optional[str] = None
+    cloud_cover: Optional[float] = 0.0
+    orbit_direction: Optional[str] = "ascending"
+    relative_orbit: Optional[int] = 142
+    polarization: Optional[str] = "Dual-Pol (VV + VH)"
+    resolution_meters: Optional[float] = 10.0
+    instrument_mode: Optional[str] = "IW Mode"
+    assets_count: int = 8
+    downloadable_preview: Optional[str] = None
+
+class SatelliteLayerConfig(BaseModel):
+    id: str
+    name: str
+    provider: str
+    url_template: str
+    format: str
+    layer_type: str  # wmts / wms / xyz
+    description: str
+    default_opacity: float = 0.85
+    has_date_dimension: bool = False
+
+class SceneAnalysisRequest(BaseModel):
+    scene_id: str
+    platform: str = "Sentinel-1B"
+    center_lat: float
+    center_lon: float
+    polarization: Optional[str] = "Dual-Pol (VV + VH)"
+    kernel_size: Optional[str] = "3x3"
+    confidence_threshold: Optional[float] = 80.0
+    filter_low_wind: Optional[bool] = True
+    filter_biogenic: Optional[bool] = True
+    filter_algae: Optional[bool] = True
+
+
 class SlickGeometryModel(BaseModel):
     id: str
     name: str

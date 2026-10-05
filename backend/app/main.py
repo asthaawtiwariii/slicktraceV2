@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from .config import settings
 from .database import init_db
-from .routers import incidents, detection, drift, attribution, reports
+from .routers import incidents, detection, drift, attribution, reports, satellite
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -43,6 +43,7 @@ else:
 # Register API Routers
 app.include_router(incidents.router)
 app.include_router(detection.router)
+app.include_router(satellite.router)
 app.include_router(drift.router)
 app.include_router(attribution.router)
 app.include_router(reports.router)

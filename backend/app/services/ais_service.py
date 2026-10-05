@@ -213,5 +213,75 @@ class AisService:
                 "track": track
             })
 
+    @staticmethod
+    def ingest_custom_ais_csv(file_content_str: str) -> Dict[str, Any]:
+        """
+        Parses and ingests a custom or real-world AIS CSV log file into DuckDB.
+        Supports standard Marine Cadastre, Spire, or generic AIS CSV column formats.
+        """
+        import csv
+        import io
+        from datetime import datetime
+
+        conn = get_duckdb_connection()
+        reader = csv.DictReader(io.StringIO(file_content_str))
+        
+        records_to_insert = []
+        for row in reader:
+            normalized_row = {k.strip().lower(): (v.strip() if v else "") for k, v in row.items() if k}
+            
+            mmsi = normalized_row.get("mmsi") or normalized_row.get("mmsi_number") or ""
+            if not mmsi:
+                continue
+                
+            raw_time = normalized_row.get("basedatetime") or normalized_row.get("timestamp") or normalized_row.get("time") or normalized_row.get("datetime") or ""
+            try:
+                dt = datetime.fromisoformat(raw_time.replace("Z", "+00:00").replace(" ", "T"))
+                timestamp_str = dt.strftime("%Y-%m-%d %H:%M:%S")
+            except Exception:
+                timestamp_str = raw_time if raw_time else datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+            try:
+                lat = float(normalized_row.get("lat") or normalized_row.get("latitude") or 0.0)
+                lon = float(normalized_row.get("lon") or normalized_row.get("longitude") or 0.0)
+                sog = float(normalized_row.get("sog") or normalized_row.get("speed") or 0.0)
+                cog = float(normalized_row.get("cog") or normalized_row.get("course") or 0.0)
+                heading = float(normalized_row.get("heading") or cog or 0.0)
+                vessel_name = normalized_row.get("vesselname") or normalized_row.get("vessel_name") or normalized_row.get("shipname") or f"Vessel-{mmsi}"
+                imo = normalized_row.get("imo") or ""
+                call_sign = normalized_row.get("callsign") or normalized_row.get("call_sign") or ""
+                vessel_type = normalized_row.get("vesseltype") or normalized_row.get("vessel_type") or normalized_row.get("shiptype") or "Tanker"
+                status = normalized_row.get("status") or "Under way using engine"
+                length = float(normalized_row.get("length") or 180.0)
+                width = float(normalized_row.get("width") or 30.0)
+                draft = float(normalized_row.get("draft") or 11.5)
+                cargo = normalized_row.get("cargo") or "Crude Oil"
+
+                records_to_insert.append((
+                    mmsi, timestamp_str, lat, lon, sog, cog, heading,
+                    vessel_name, imo, call_sign, vessel_type, status,
+                    length, width, draft, cargo
+                ))
+            except Exception:
+                continue
+
+        if records_to_insert:
+            conn.executemany("""
+                INSERT INTO ais_records (
+                    MMSI, BaseDateTime, LAT, LON, SOG, COG, Heading,
+                    VesselName, IMO, CallSign, VesselType, Status,
+                    Length, Width, Draft, Cargo
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, records_to_insert)
+
+        total_in_db = conn.execute("SELECT COUNT(*) FROM ais_records").fetchone()[0]
+        unique_mmsis = conn.execute("SELECT COUNT(DISTINCT MMSI) FROM ais_records").fetchone()[0]
         conn.close()
-        return total_vessels, vessels_data
+
+        return {
+            "status": "success",
+            "records_ingested": len(records_to_insert),
+            "total_records_in_db": total_in_db,
+            "unique_vessels_in_db": unique_mmsis
+        }
+

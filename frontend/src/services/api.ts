@@ -118,4 +118,119 @@ export const api = {
     if (!res.ok) throw new Error(`Failed to fetch ${target} stakeholder dossier`);
     return await res.json();
   },
+
+  // Get operational satellite tile layer configurations (NASA GIBS / Copernicus / OpenSeaMap)
+  async getSatelliteLayers() {
+    const res = await fetch(`${API_BASE_URL}/satellite/layers`);
+    if (!res.ok) throw new Error('Failed to fetch satellite layers');
+    return await res.json();
+  },
+
+  // Search live open STAC catalogs (Sentinel-1 SAR, Sentinel-2 MSI, Landsat)
+  async searchSatelliteScenes(payload: {
+    bbox?: [number, number, number, number];
+    point?: [number, number];
+    start_date?: string;
+    end_date?: string;
+    collections?: string[];
+    sensor_type?: string;
+    limit?: number;
+  }) {
+    const res = await fetch(`${API_BASE_URL}/satellite/search`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error('Failed to search satellite scenes');
+    return await res.json();
+  },
+
+  // Analyze a real satellite scene with Refined Lee filter and OilSpillNet segmentation
+  async analyzeSatelliteScene(payload: {
+    scene_id: string;
+    platform: string;
+    center_lat: number;
+    center_lon: number;
+    kernel_size?: string;
+    confidence_threshold?: number;
+    filter_low_wind?: boolean;
+    filter_biogenic?: boolean;
+    filter_algae?: boolean;
+  }) {
+    const res = await fetch(`${API_BASE_URL}/satellite/analyze-scene`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error('Failed to analyze satellite scene');
+    return await res.json();
+  },
+
+  // Get live metocean conditions (wind, waves, currents) for any coordinate
+  async getLiveMetocean(lat: number, lon: number) {
+    const res = await fetch(`${API_BASE_URL}/drift/metocean-live?lat=${lat}&lon=${lon}`);
+    if (!res.ok) throw new Error('Failed to fetch live metocean data');
+    return await res.json();
+  },
+
+  // Upload custom or real-world AIS CSV logs into DuckDB
+  async uploadAisCsv(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(`${API_BASE_URL}/attribution/upload-ais`, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!res.ok) throw new Error('Failed to upload AIS CSV');
+    return await res.json();
+  },
+
+  // Create a new real-world operational incident anywhere on Earth
+  async createIncident(payload: {
+    title: string;
+    location_name: string;
+    lat: number;
+    lon: number;
+    area_km2?: number;
+    sensor?: string;
+  }) {
+    const params = new URLSearchParams({
+      title: payload.title,
+      location_name: payload.location_name,
+      lat: payload.lat.toString(),
+      lon: payload.lon.toString(),
+      area_km2: (payload.area_km2 || 15.0).toString(),
+      sensor: payload.sensor || 'Sentinel-1 SAR (IW Mode)',
+    });
+    const res = await fetch(`${API_BASE_URL}/incidents/create?${params.toString()}`, {
+      method: 'POST',
+    });
+    if (!res.ok) throw new Error('Failed to create incident');
+    return await res.json();
+  },
+
+  // Analyze a real uploaded satellite/drone image tile
+  async analyzeUploadedImage(file: File, centerLat: number, centerLon: number, pixelResM: number = 10) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('center_lat', centerLat.toString());
+    formData.append('center_lon', centerLon.toString());
+    formData.append('pixel_res_m', pixelResM.toString());
+    const res = await fetch(`${API_BASE_URL}/detection/analyze-upload`, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!res.ok) throw new Error('Failed to analyze uploaded image');
+    return await res.json();
+  },
+
+  // Get high-risk maritime satellite surveillance hotspots
+  async getSatelliteHotspots() {
+    const res = await fetch(`${API_BASE_URL}/satellite/hotspots`);
+    if (!res.ok) throw new Error('Failed to fetch satellite hotspots');
+    return await res.json();
+  },
 };
+
+
+

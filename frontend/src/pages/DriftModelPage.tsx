@@ -37,9 +37,30 @@ export const DriftModelPage: React.FC = () => {
 
   // Weathering Simulation State
   const [isSimulatingDrift, setIsSimulatingDrift] = useState(false);
+  const [isLoadingLiveMetocean, setIsLoadingLiveMetocean] = useState(false);
+  const [metoceanSourceLabel, setMetoceanSourceLabel] = useState<string | null>(null);
   const [evapPercent, setEvapPercent] = useState(activeIncident.weathering?.evaporationPercent || 24.5);
   const [emulsifPercent, setEmulsifPercent] = useState(activeIncident.weathering?.emulsificationWaterPercent || 42.0);
   const [viscosity, setViscosity] = useState(activeIncident.weathering?.dynamicViscosityCp || 185.0);
+
+  const handleFetchLiveMetocean = async () => {
+    setIsLoadingLiveMetocean(true);
+    showToast("Connecting to live Open-Meteo Marine & ECMWF atmospheric feeds...");
+    try {
+      const data = await api.getLiveMetocean(slick.centroid[0], slick.centroid[1]);
+      setCurrentSpeed(data.current_speed_knots);
+      setCurrentDir(data.current_direction_deg);
+      setWindSpeed(data.wind_speed_knots);
+      setWindDir(data.wind_direction_deg);
+      setMetoceanSourceLabel(`${data.current_model_source} / ${data.wind_model_source}`);
+      showToast(`✓ Live Metocean synced: Wind ${data.wind_speed_knots} kn @ ${data.wind_direction_deg}°, Current ${data.current_speed_knots} kn`);
+    } catch (e) {
+      console.error(e);
+      showToast("Could not fetch live metocean, keeping calibrated values");
+    } finally {
+      setIsLoadingLiveMetocean(false);
+    }
+  };
 
   const handleRunDrift = async () => {
     setIsSimulatingDrift(true);
@@ -164,10 +185,30 @@ export const DriftModelPage: React.FC = () => {
         {/* Left Column: Metocean Vector Fields & Leeway Parameters (3 Cols) */}
         <div className="lg:col-span-3 flex flex-col gap-3">
           <div className="bg-white dark:bg-[#131D31] border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-xs">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3 flex items-center gap-1.5">
-              <SlidersHorizontal className="w-3.5 h-3.5 text-blue-500" />
-              <span>Metocean Vector Controls</span>
-            </h3>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                <SlidersHorizontal className="w-3.5 h-3.5 text-blue-500" />
+                <span>Metocean Vector Controls</span>
+              </h3>
+            </div>
+
+            {/* Live Metocean Sync Button */}
+            <button
+              onClick={handleFetchLiveMetocean}
+              disabled={isLoadingLiveMetocean}
+              type="button"
+              className="w-full mb-3 px-2.5 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-500 hover:to-teal-500 text-white text-xs font-semibold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition disabled:opacity-60"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoadingLiveMetocean ? 'animate-spin' : ''}`} />
+              <span>{isLoadingLiveMetocean ? 'Querying Open-Meteo...' : 'Sync Live Winds & Currents'}</span>
+            </button>
+
+            {metoceanSourceLabel && (
+              <div className="text-[10px] text-teal-600 dark:text-teal-400 font-mono mb-2 bg-teal-50 dark:bg-teal-950/40 p-1.5 rounded border border-teal-200 dark:border-teal-800">
+                Live Source: {metoceanSourceLabel}
+              </div>
+            )}
+
 
             <div className="space-y-3.5 text-xs">
               {/* Surface Current Speed Slider */}
