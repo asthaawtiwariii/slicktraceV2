@@ -1,11 +1,12 @@
 services:
-  # Unified Full-Stack SlickTrace Web Service (FastAPI + React 19 Frontend)
+  # SlickTrace V2 Full-Stack Web Application (Frontend + Backend + DuckDB)
   - type: web
-    name: slicktrace-app
+    name: slicktrace
     runtime: python
+    rootDir: backend
     plan: free
-    buildCommand: pip install -r backend/requirements.txt && cd frontend && npm install && npm run build && cd ..
-    startCommand: uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.8
