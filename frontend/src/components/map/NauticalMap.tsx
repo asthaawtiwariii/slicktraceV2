@@ -60,42 +60,42 @@ export const NauticalMap: React.FC = () => {
   const [isMeasuring, setIsMeasuring] = useState(false);
   const [mouseCoords, setMouseCoords] = useState<string | null>(null);
 
-  // Basemap Tile URLs
+  // Basemap Tile URLs (100% Free, Open & Keyless)
   const basemapTiles: Record<BasemapId, { name: string; url: string; subdomains: string; maxZoom: number; desc: string }> = {
     dark: {
-      name: 'Dark Ocean',
-      url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+      name: 'Dark Ocean Canvas',
+      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
       subdomains: 'abcd',
       maxZoom: 18,
-      desc: 'CartoDB Dark Matter for low-light tactical ops'
+      desc: 'High-contrast dark ocean canvas for tactical night-ops and radar'
     },
     satellite: {
-      name: 'Satellite Hybrid',
+      name: 'Satellite Hybrid (10m)',
       url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
       subdomains: 'abcd',
       maxZoom: 18,
-      desc: 'High-res Sentinel/Landsat/Esri optical imagery'
+      desc: 'High-res true color satellite imagery (Copernicus / Maxar / Esri)'
     },
     nautical: {
-      name: 'Maritime Nautical Chart',
-      url: 'https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png',
-      subdomains: 'abc',
-      maxZoom: 18,
-      desc: 'OpenSeaMap seamarks & nautical navigation aid'
+      name: 'World Ocean Bathymetry',
+      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Ocean/World_Ocean_Base/MapServer/tile/{z}/{y}/{x}',
+      subdomains: 'abcd',
+      maxZoom: 16,
+      desc: 'Global marine bathymetry, depth contours & oceanic trenches'
     },
     topo: {
-      name: 'Bathymetry & Topo',
+      name: 'Coastal Topo Map',
       url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
       subdomains: 'abc',
       maxZoom: 17,
-      desc: 'High-relief topographic and coastal bathymetry'
+      desc: 'High-relief topographic and coastal elevation'
     },
     voyager: {
-      name: 'Voyager Clean',
-      url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-      subdomains: 'abcd',
-      maxZoom: 18,
-      desc: 'Clean vector navigation chart'
+      name: 'OpenStreetMap Navigation',
+      url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      subdomains: 'abc',
+      maxZoom: 19,
+      desc: 'Global OpenStreetMap navigation chart'
     }
   };
 
