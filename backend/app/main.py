@@ -1,5 +1,9 @@
+import os
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from contextlib import asynccontextmanager
 
 from .config import settings
@@ -34,13 +38,13 @@ else:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=origins,
-        allow_origin_regex=r"https?://.*\.vercel\.app",
+        allow_origin_regex=r"https?://.*\.onrender\.com|https?://.*\.vercel\.app",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
     )
 
-# Register API Routers
+# Register API Routers under /api
 app.include_router(incidents.router)
 app.include_router(detection.router)
 app.include_router(satellite.router)
@@ -48,8 +52,16 @@ app.include_router(drift.router)
 app.include_router(attribution.router)
 app.include_router(reports.router)
 
-@app.get("/")
-def root():
+@app.get("/api/health")
+def healthcheck():
+    return {
+        "status": "healthy",
+        "database_connected": True,
+        "active_feed": "Marine Cadastre AIS + Sentinel-1 SAR"
+    }
+
+@app.get("/api/info")
+def api_info():
     return {
         "system": settings.PROJECT_NAME,
         "version": settings.VERSION,
@@ -59,13 +71,30 @@ def root():
         "ais_dataset_source": "https://marinecadastre.gov/accessais/"
     }
 
-@app.get("/api/health")
-def healthcheck():
-    return {
-        "status": "healthy",
-        "database_connected": True,
-        "active_feed": "Marine Cadastre AIS + Sentinel-1 SAR"
-    }
+# Serve Frontend Static Assets if available
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+FRONTEND_DIST = BASE_DIR / "frontend" / "dist"
+
+if FRONTEND_DIST.exists() and (FRONTEND_DIST / "index.html").exists():
+    if (FRONTEND_DIST / "assets").exists():
+        app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIST / "assets")), name="assets")
+
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        file_path = FRONTEND_DIST / full_path
+        if full_path and file_path.exists() and file_path.is_file():
+            return FileResponse(file_path)
+        return FileResponse(FRONTEND_DIST / "index.html")
+else:
+    @app.get("/")
+    def root():
+        return {
+            "system": settings.PROJECT_NAME,
+            "version": settings.VERSION,
+            "status": "operational",
+            "docs": "/docs",
+            "database": "DuckDB High-Performance Analytics Engine"
+        }
 
 if __name__ == "__main__":
     import uvicorn
