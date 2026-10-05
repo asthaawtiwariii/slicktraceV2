@@ -5,6 +5,8 @@ dist-ssr/
 *.local
 .npm
 .vite/
+.eslintcache
+.turbo/
 
 # Python / Backend
 __pycache__/
@@ -16,6 +18,8 @@ env/
 venv/
 .venv/
 ENV/
+env.bak/
+venv.bak/
 build/
 develop-eggs/
 downloads/
@@ -27,16 +31,28 @@ parts/
 sdist/
 var/
 wheels/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
 
-# DuckDB Temp
+# DuckDB / Databases / Data artifacts
+*.duckdb
 *.duckdb.tmp
 *.duckdb.wal
+backend/data/*.duckdb
+backend/data/*.wal
+backend/data/*.tmp
 
-# Environment Variables
+# Environment Variables & Secrets
 .env
+.env.*
+*.env
 !.env.example
 
 # IDE / Editor
@@ -47,6 +63,7 @@ wheels/
 *~
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Logs
 *.log

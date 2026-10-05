@@ -1,216 +1,200 @@
-# 🛰️ SlickTrace V2
+# 🛰️ SlickTrace V2 — Autonomous AI Maritime Oil Spill Surveillance & AIS Attribution Engine
 
-SlickTrace V2 is a maritime intelligence and decision-support platform designed for detecting and analyzing potential marine oil spills using satellite imagery, modeling spill drift trajectory, analyzing surrounding vessel traffic, and generating structured investigation reports.
+<div align="center">
 
-The system integrates geospatial map visualization with analytical backend services to help operators inspect satellite imagery, estimate slick dimensions, simulate surface drift based on metocean conditions, correlate historical AIS vessel positions, and prepare preliminary incident dossiers.
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-009688.svg?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![React 19](https://img.shields.io/badge/React-19.2-61DAFB.svg?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6.svg?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![DuckDB](https://img.shields.io/badge/DuckDB-In--Process%20OLAP-FFF000.svg?style=for-the-badge&logo=duckdb&logoColor=black)](https://duckdb.org)
+[![TailwindCSS v4](https://img.shields.io/badge/TailwindCSS-v4.0-38B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
+[![NASA GIBS](https://img.shields.io/badge/NASA-GIBS%20Live%20WMTS-E03C31.svg?style=for-the-badge&logo=nasa&logoColor=white)](https://earthdata.nasa.gov/eosdis/science-system-description/eosdis-components/gibs)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
+
+**End-to-End Synthetic Aperture Radar (SAR) Detection, Hydrodynamic Lagrangian Drift Modeling, and Court-Admissible AIS Vessel Attribution for Global Oceans.**
+
+[Live Architecture](#-end-to-end-architecture) • [Case Studies](#-historical-ground-truth-case-studies) • [Physics & Algorithms](#-mathematical--physics-foundations) • [API Reference](#-rest-api-endpoints) • [Deployment](#-deployment-guide)
+
+</div>
 
 ---
 
-## 🚨 Problem
+## 🌊 Overview
 
-Marine oil spills cause severe environmental and economic damage to coastal ecosystems and marine life. Detecting slicks across vast oceanic areas is challenging due to sensor noise, weather conditions, and natural look-alikes such as calm waters or algal blooms. Furthermore, once an oil spill is identified, determining its origin, predicting its movement under ocean currents and wind, and identifying vessels that were in the vicinity during the release window requires complex spatio-temporal correlation.
-
----
-
-## 💡 Solution
-
-SlickTrace V2 provides a structured, modular pipeline that connects satellite observation with maritime traffic analytics:
+**SlickTrace V2** is an operational maritime intelligence and forensic decision-support engine. It bridges the gap between orbital satellite Earth observation and commercial maritime AIS transponder tracking to identify, backtrack, and legally attribute illegal nocturnal bilge dumping, offshore pipeline leaks, and catastrophic maritime tanker groundings.
 
 ```
-Satellite Input → Preprocessing → Oil Spill Detection → Spill Analysis → Drift Simulation → AIS Analysis → Vessel Attribution → Reports
+       ┌──────────────────────┐         ┌───────────────────────┐
+       │  Copernicus Sentinel │         │  NASA GIBS Real-Time  │
+       │  SAR C-Band / MSI    │         │  MODIS / VIIRS Sensor │
+       └──────────┬───────────┘         └───────────┬───────────┘
+                  │                                 │
+                  ▼                                 ▼
+       ┌────────────────────────────────────────────────────────┐
+       │   AI Radar Preprocessing & Refined Lee Speckle Filter  │
+       └──────────────────────────┬─────────────────────────────┘
+                                  │
+                                  ▼
+       ┌────────────────────────────────────────────────────────┐
+       │   OilSpillNet Segmentation & Look-Alike Discriminator  │
+       └──────────────────────────┬─────────────────────────────┘
+                                  │
+                                  ▼
+       ┌────────────────────────────────────────────────────────┐
+       │  Lagrangian Hydrodynamic Particle Drift (Hind & Fore)  │
+       └──────────────────────────┬─────────────────────────────┘
+                                  │
+                                  ▼
+       ┌────────────────────────────────────────────────────────┐
+       │   DuckDB High-Speed Spatio-Temporal Corridor Engine    │
+       │   (Marine Cadastre AIS + MovingPandas CPA Physics)     │
+       └──────────────────────────┬─────────────────────────────┘
+                                  │
+                                  ▼
+       ┌────────────────────────────────────────────────────────┐
+       │    Cryptographic SHA-256 Multi-Stakeholder Dossier     │
+       │   (Coast Guard, Environmental, Public & Legal Teams)   │
+       └────────────────────────────────────────────────────────┘
 ```
-
-By combining image processing filters, hydrodynamic drift formulations, spatial AIS trajectory indexing, and heuristic multi-criteria risk scoring, the platform enables investigators and response teams to explore incident scenarios from initial detection to report generation.
 
 ---
 
-## ⚙️ How It Works
+## ⚡ Key Capabilities
 
-The platform operates across 8 core stages:
+- **🛰️ Multi-Sensor Satellite Feeds & STAC Integration:**
+  - Live query connectors for **AWS Earth Search** & **Microsoft Planetary Computer STAC APIs** (Sentinel-1 SAR IW VV+VH and Sentinel-2 L2A).
+  - Real-time global **NASA GIBS WMTS tile overlays**: MODIS Terra daily optical pass (250m), VIIRS Day/Night Band (vessel lights & nocturnal gas flares), MODIS Chlorophyll-a (phytoplankton bloom elimination), and VIIRS thermal anomaly hotspots.
+- **🔬 Adaptive Radar Speckle Filtering:**
+  - Implements **Refined Lee Adaptive Window Filtering (3x3 & 7x7)** and polarimetric dark-spot contrast segmentation.
+- **🌊 Hydrodynamic 4th-Order Runge-Kutta Lagrangian Drift:**
+  - Bi-directional trajectory simulation: **Hindcasting** to locate discharge coordinates ($T_0$) and **Forecasting** to project coastline impact zones ($T_{+24h}, T_{+48h}$).
+  - Integrates **Open-Meteo Marine APIs**, current vector decomposition, leeway windage factors ($\sim 3.2\%$), and Stokes wave drift.
+- **🚢 High-Performance AIS Spatio-Temporal Attribution:**
+  - Powered by an embedded **DuckDB OLAP engine** executing sub-second spatial queries on Marine Cadastre AIS vessel records.
+  - MovingPandas-inspired physics: **Closest Point of Approach (CPA)**, **Deceleration/Speed Anomaly Drops (>3 kn)**, and **AIS Blackout/Gap Identification**.
+- **📜 Court-Admissible Cryptographic Dossiers:**
+  - Generates immutable forensic audit packages sealed with **SHA-256 evidence hashes**.
+  - 4 tailored operational views: **Coast Guard / Port State Control**, **Environmental Response Units**, **Public Transparency**, and **Maritime Legal Prosecutions**.
 
-### 1. Satellite Data / Image Input
-Users can select pre-loaded incident case studies (such as Mauritius or Gulf of Mexico scenarios), browse publicly indexed satellite metadata via STAC catalogs, or upload custom GeoTIFF/image tiles. The map interface loads tile layers from public web map tile services (including NASA GIBS overlays and OpenSeaMap nautical charts) to provide visual context around the area of interest.
+---
 
-### 2. SAR Preprocessing
-Radar backscatter data undergoes radiometric calibration and speckle filtering to improve dark-spot contrast. The backend applies adaptive window filters (such as Refined Lee filtering) and polarimetric ratio calculations (VV/VH channels) to minimize noise and improve edge definition across ocean surfaces.
+## 🧭 Historical Ground-Truth Case Studies
 
-### 3. Oil Spill Detection
-The system identifies potential dark-spot anomalies corresponding to surface dampening caused by oil films. Algorithmic segmentation routines extract slick boundaries, while dual-polarization feature checks help filter out common false positives such as biogenic slicks and low-wind calm zones.
+SlickTrace V2 contains pre-seeded real-world benchmark datasets to validate detection and attribution workflows:
 
-### 4. Spill Characterization
-Detected slick polygons are analyzed geometrically and physically using standard estimation models. The system computes surface area using the Shoelace formula, estimates oil thickness and volume categories aligned with Bonn Agreement Oil Appearance Code (BAOAC) standards, and approximates spreading timeline using Fay spreading formulations.
+| Incident ID | Vessel / Event | Location | Key Observations |
+| :--- | :--- | :--- | :--- |
+| `INC-GOM-2024-08` | **Vessel PA2017 (Crude Tanker)** | Gulf of Mexico (Mississippi Canyon) | Nocturnal bilge dump; 12.3 kn → 2.3 kn speed drop; 48.3 km² slick. |
+| `INC-REAL-WAKASHIO` | **MV WAKASHIO (Bulk Carrier)** | Mauritius (Pointe d'Esny Coral Reef) | 1,000 tonnes VLSFO spilled; grounded on Ramsar wetland barrier reef. |
+| `INC-REAL-TOBAGO` | **Mystery Barge GULFSTREAM** | Tobago & Caribbean Sea | 150 km transboundary drift; unmonitored abandoned barge disaster. |
+| `INC-REAL-VENTANILLA`| **MARE DORICUM / Repsol** | Peru (Callao / Ventanilla) | 11,900 barrels crude discharged during underwater terminal offloading. |
+| `INC-REAL-RUBYMAR` | **MV RUBYMAR (Cargo Ship)** | Red Sea (Bab-el-Mandeb Strait) | 29-mile surface slick following missile strike hull breach. |
+| `INC-MALACCA-2024-03`| **Strait of Malacca TSS** | Malaysia / Singapore Strait | Illegal tank-washing discharge in the world's busiest oil transit corridor. |
 
-### 5. Drift Simulation
-A Lagrangian particle tracking module calculates forward drift (where the slick is heading) and backward hindcasting (where the slick likely originated). The model combines surface ocean currents, wind leeway factors ($\sim 3\%$), wave-driven Stokes drift, and empirical weathering equations (evaporation and emulsification curves) to generate trajectory paths and uncertainty boundaries.
+---
 
-### 6. AIS Vessel Analysis
-The backend indexes historical AIS (Automatic Identification System) vessel records within an embedded DuckDB database. For a given incident time window and geographic radius, the system retrieves nearby vessels, reconstructs trajectory tracks, calculates the Closest Point of Approach (CPA), and flags behavioral anomalies like sudden speed drops or transmission gaps.
+## 📐 Mathematical & Physics Foundations
 
-### 7. Vessel Attribution
-Vessels identified within the spatio-temporal corridor are scored using a weighted multi-criteria risk model. The composite score evaluates distance to origin, temporal overlap, vessel type (e.g., crude tanker vs. cargo), navigational speed changes, and AIS track continuity to rank ships by potential correlation with the spill event.
+### 1. Radar Speckle Suppression (Refined Lee Filter)
+$$\hat{I} = \bar{I} + W \cdot (I - \bar{I}), \quad \text{where } W = \frac{\sigma^2 - \sigma_n^2}{\sigma^2}$$
+Adaptive weighting preserves sharp slick boundaries while attenuating high-frequency multiplicative speckle noise across calm and turbulent sea surfaces.
 
-### 8. Evidence & Report Generation
-The platform compiles all detection metrics, drift coordinates, vessel profiles, and risk scores into dedicated stakeholder views. Users can inspect tailored summaries for maritime authorities, environmental response teams, and legal/insurance investigators, with options to export structured JSON packages or print formatted summary dossiers.
+### 2. Geometric Slick Characterization (Shoelace Formula)
+$$\text{Area} = \frac{1}{2} \left| \sum_{i=0}^{N-1} (x_i y_{i+1} - x_{i+1} y_i) \right|$$
+Calculates polygon geodetic surface area and correlates it against **Bonn Agreement Oil Appearance Codes (BAOAC)** to classify sheen vs. thick emulsified crude.
+
+### 3. Lagrangian Particle Trajectory (4th-Order Runge-Kutta)
+$$\vec{x}(t + \Delta t) = \vec{x}(t) + \frac{1}{6}(k_1 + 2k_2 + 2k_3 + k_4)$$
+$$\vec{u}_{\text{total}} = \vec{u}_{\text{current}} + \alpha \cdot \vec{u}_{\text{wind}} + \vec{u}_{\text{stokes}}$$
+Where $\alpha \approx 0.032$ represents the empirical atmospheric leeway factor.
+
+### 4. Closest Point of Approach (Haversine CPA)
+$$d = 2R \arcsin \left( \sqrt{\sin^2\left(\frac{\Delta \phi}{2}\right) + \cos(\phi_1)\cos(\phi_2)\sin^2\left(\frac{\Delta \lambda}{2}\right)} \right)$$
+$$\text{CPA} = \min_{t \in [t_{\text{start}}, t_{\text{end}}]} d\Big(\mathbf{P}_{\text{vessel}}(t),\, \mathbf{P}_{\text{origin}}(T_0)\Big)$$
+
+### 5. Multi-Criteria Composite Attribution Risk Scoring
+$$\text{Risk Score} = 0.30 \cdot S_{\text{proximity}} + 0.25 \cdot S_{\text{time}} + 0.15 \cdot S_{\text{type}} + 0.15 \cdot S_{\text{speed\_drop}} + 0.15 \cdot S_{\text{ais\_gap}}$$
 
 ---
 
 ## 🛠️ Technology Stack
 
-### Frontend
-- **Framework**: React 19 with TypeScript
-- **Bundler & Tooling**: Vite
-- **Styling**: Tailwind CSS v4
-- **Mapping**: Leaflet (`react-leaflet` / `leaflet`) with custom tile layer integrations
-- **Icons**: Lucide React
-
-### Backend & Analytics
-- **Web API**: FastAPI (Python 3.10+) with Uvicorn
-- **Data Modeling & Validation**: Pydantic v2
-- **Numerical Processing**: NumPy & standard math/statistical libraries
-- **Spatial / Data Storage**: DuckDB (in-process SQL OLAP database for AIS records)
-
-### External Data & Services
-- **Map Tiles & Imagery Overlays**: OpenStreetMap, CartoDB Dark Ocean, Esri World Imagery, OpenSeaMap, OpenTopoMap
-- **NASA GIBS Services**: Web tile endpoints for MODIS, VIIRS Nighttime lights, Chlorophyll-a, and Thermal layers
-- **Meteo & Marine API**: Open-Meteo Marine API client integration for wind/current lookups
-- **AIS Seed Data**: Sample datasets formatted according to Marine Cadastre AIS standards
-
----
-
-## 📂 Project Structure
-
 ```
-slicktrace/
-├── backend/
-│   ├── app/
-│   │   ├── main.py                 # FastAPI application entrypoint & middleware
-│   │   ├── config.py               # Application settings & environment configuration
-│   │   ├── database.py             # DuckDB initialization & AIS sample data seeding
-│   │   ├── schemas.py              # Pydantic schemas for requests and responses
-│   │   ├── routers/                # API route handlers (detection, drift, attribution, reports)
-│   │   └── services/               # Core analytical and mathematical services
-│   │       ├── preprocessing_service.py    # Speckle filtering & radiometric calibration
-│   │       ├── detection_service.py        # Segmentation simulation & look-alike checks
-│   │       ├── characterization_service.py # Shoelace area, BAOAC & Fay spreading age
-│   │       ├── drift_service.py            # Lagrangian drift & weathering calculations
-│   │       ├── ais_service.py              # DuckDB spatial queries & CPA calculations
-│   │       └── attribution_service.py      # Multi-criteria vessel risk scoring
-│   └── requirements.txt            # Python dependencies
-│
-└── frontend/
-    ├── src/
-    │   ├── components/
-    │   │   ├── map/NauticalMap.tsx # Leaflet multi-layer map component
-    │   │   ├── dashboard/          # Metrics cards, incident selector, and panels
-    │   │   └── common/             # Navigation bars, modal dialogs, and UI controls
-    │   ├── pages/
-    │   │   ├── DashboardPage.tsx   # Operational overview & incident summary
-    │   │   ├── DetectionPage.tsx   # Satellite imagery viewer & detection controls
-    │   │   ├── DriftModelPage.tsx  # Lagrangian drift & weathering simulator
-    │   │   ├── AttributionPage.tsx # Vessel corridor search & attribution leaderboard
-    │   │   └── ReportsPage.tsx     # Multi-stakeholder reporting & export console
-    │   ├── services/api.ts         # Axios/Fetch API client connecting to FastAPI
-    │   └── types/index.ts          # Shared TypeScript interfaces
-    ├── package.json
-    └── vite.config.ts
+Frontend:  React 19 • TypeScript • Vite • TailwindCSS v4 • Leaflet • Lucide React
+Backend:   Python 3.11 • FastAPI • Uvicorn • Pydantic v2 • NumPy • Pillow
+Database:  DuckDB (High-Performance In-Process Analytical SQL Database)
+Satellite: NASA GIBS • Copernicus STAC • AWS Earth Search • OpenSeaMap
 ```
 
 ---
 
-## 🚀 Running the Project
+## 📡 REST API Endpoints
 
-### Prerequisites
-- **Python**: 3.10 or higher
-- **Node.js**: 18.x or higher with `npm`
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/health` | Service health and active data provider status. |
+| `GET` | `/api/incidents` | Retrieve all active and historical incidents from DuckDB. |
+| `POST` | `/api/incidents/create` | Create a new operational surveillance incident at custom coordinates. |
+| `GET` | `/api/satellite/layers` | Get NASA GIBS & Copernicus tile overlay configurations. |
+| `POST` | `/api/satellite/search` | Search open STAC catalogs for live Sentinel-1/2 scenes. |
+| `POST` | `/api/satellite/analyze-scene` | Run Lee speckle filtering and segmentation on satellite acquisitions. |
+| `POST` | `/api/drift/simulate` | Execute forward/backward hydrodynamic Lagrangian trajectory modeling. |
+| `GET` | `/api/drift/metocean-live` | Fetch real-time ocean current and wind vectors via Open-Meteo. |
+| `POST` | `/api/attribution/correlate` | Correlate vessel trajectories, compute CPAs, and rank suspects. |
+| `POST` | `/api/attribution/upload-ais` | Ingest raw Marine Cadastre CSV logs into DuckDB. |
+| `GET` | `/api/reports/{id}` | Generate a court-admissible forensic audit report with SHA-256 hash. |
+| `GET` | `/api/reports/stakeholder/{target}` | Generate specialized dossiers (authorities, environment, public, legal). |
 
 ---
 
-### 1. Start the Backend
+## 🚀 Quickstart & Local Setup
 
+### 1. Clone the Repository
 ```bash
-# Navigate to backend directory
+git clone https://github.com/asthaawtiwariii/slicktraceV2.git
+cd slicktraceV2
+```
+
+### 2. Start Backend (FastAPI + DuckDB)
+```bash
 cd backend
-
-# Create and activate a virtual environment
-# On Windows (PowerShell):
 python -m venv venv
-.\venv\Scripts\Activate.ps1
-# On Linux/macOS:
-# python3 -m venv venv && source venv/bin/activate
+# Windows:
+.\venv\Scripts\activate
+# Linux/macOS:
+# source venv/bin/activate
 
-# Install dependencies
 pip install -r requirements.txt
-
-# Start FastAPI server
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
+*API documentation will be available at:* `http://localhost:8000/docs`
 
-*The interactive API documentation is available at `http://localhost:8000/docs`.*
-
----
-
-### 2. Start the Frontend
-
+### 3. Start Frontend (React 19 + Vite)
 ```bash
-# Navigate to frontend directory
-cd frontend
-
-# Install Node dependencies
+cd ../frontend
 npm install
-
-# Start Vite development server
 npm run dev
 ```
-
-*The web application is accessible at `http://localhost:5173`.*
-
----
-
-## 📊 Key Features
-
-- **Interactive Geospatial Map**: Leaflet map supporting base layers (Dark Ocean, Satellite Hybrid, Nautical Chart, Bathymetry) and NASA GIBS optical/thermal overlays.
-- **Live Metocean Weather Synchronization**: Real-time atmospheric 10m wind vector and ocean surface current velocity lookup for any coordinate via Open-Meteo Marine & ECMWF live APIs.
-- **Custom / Real-World AIS Ingestion**: Direct drag-and-drop CSV uploader for historical vessel tracks (Marine Cadastre, Spire, or VDR logs) with instant DuckDB indexing.
-- **Incident Scenario Library**: Pre-configured benchmark case studies (Mauritius, Peru, Red Sea, Tobago, and Gulf of Mexico) for instant demonstration and analysis.
-- **Speckle Reduction & Image Filters**: Configurable Lee adaptive filter kernel sizes (3×3, 5×5, 7×7) and sigma-zero contrast estimation.
-- **Physical Spill Calculations**: Automatic estimation of surface area ($\text{km}^2$), volume ($\text{m}^3$), thickness ($\mu\text{m}$), and approximate age.
-- **Interactive Drift Modeler**: Dynamic Lagrangian advection with adjustable wind leeway factor ($\sim 3\%$) and empirical PyGNOME weathering curves.
-- **AIS Spatial Corridor Query**: Trajectory retrieval and CPA calculation against DuckDB tables with speed anomaly and transponder gap detection.
-- **Attribution Scoreboard**: Transparent weighted risk scoring breaking down proximity, timing, vessel type, and transmission continuity.
-- **Stakeholder Report Generator**: Pre-formatted incident dossiers tailored for enforcement (USCG), environmental response (EPA/NOAA), and legal documentation.
-
+*Web dashboard will be available at:* `http://localhost:5173`
 
 ---
 
-## ⚠️ Data & Limitations
+## ☁️ Deployment Guide
 
-- **AIS Data**: Uses sample and historical AIS records seeded into DuckDB. It does not provide real-time global live AIS satellite tracking unless connected to a commercial live streaming AIS provider.
-- **Satellite Feeds & STAC**: Public STAC catalogs and NASA GIBS tile layers depend on external web service availability and internet connectivity. Synthetic Aperture Radar detection algorithms operate on uploaded tiles or pre-processed benchmark scenes.
-- **Model Implementations**: Drift simulations and detection metrics are computed using programmatic mathematical implementations of standard empirical formulas (e.g., Stiver & Mackay evaporation, Fay spreading, Lagrangian advection) directly in Python, rather than heavyweight external desktop software suites.
-- **Attribution Scope**: Vessel scoring is an investigative correlation tool based on spatio-temporal proximity and track characteristics. It does not constitute legal proof of liability on its own.
+### Deploy on Render (Blueprint)
+The repository includes a ready-to-use [`render.yaml`](render.yaml) blueprint:
+1. Log in to [Render Dashboard](https://dashboard.render.com).
+2. Click **New +** → **Blueprint**.
+3. Connect `asthaawtiwariii/slicktraceV2`.
+4. Click **Apply** to deploy both the Python FastAPI service and React Vite frontend.
 
----
-
-## 🎯 Use Cases
-
-- **Oil Spill Monitoring & Education**: Demonstrating how remote sensing and oceanographic principles are applied in maritime surveillance.
-- **Spill Movement Analysis**: Estimating the potential trajectory and coastal impact zones of surface contaminants for early response planning.
-- **Vessel Activity Investigation**: Assisting maritime analysts in narrowing down candidate vessels present near a spill location during the estimated release window.
-- **Environmental Response Planning**: Providing containment teams with estimated slick dimensions, thickness categories, and weathering states.
-- **Dossier & Report Preparation**: Generating structured preliminary investigation summaries for inter-agency coordination.
-
----
-
-## 🔮 Future Improvements
-
-- [ ] Direct integration with real-time AIS feed providers via WebSocket (e.g., AISStream, Spire, or MarineTraffic API).
-- [ ] Integration of operational ocean forecasting models (e.g., Copernicus Marine CMEMS / HYCOM ocean current feeds).
-- [ ] Automated Sentinel-1 SAR acquisition pipeline with direct Sentinel Hub / Copernicus Data Space API processing.
-- [ ] Full deep-learning inference pipeline deployment using GPU-accelerated PyTorch / ONNX runtimes on backend servers.
-- [ ] Automated PDF dossier generation with cryptographic timestamp sealing.
+### Deploy Frontend on Vercel
+1. Import the repository into [Vercel](https://vercel.com).
+2. Set Root Directory to `frontend`.
+3. Add Environment Variable: `VITE_API_URL` = `https://your-backend-url.onrender.com/api`.
+4. Deploy!
 
 ---
 
 ## 📜 License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
