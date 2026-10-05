@@ -71,20 +71,23 @@ def api_info():
         "ais_dataset_source": "https://marinecadastre.gov/accessais/"
     }
 
-# Serve Frontend Static Assets if available
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-FRONTEND_DIST = BASE_DIR / "frontend" / "dist"
+# Locate static assets in backend/static or frontend/dist
+BACKEND_DIR = Path(__file__).resolve().parent.parent
+STATIC_DIR = BACKEND_DIR / "static"
+FRONTEND_DIST = BACKEND_DIR.parent / "frontend" / "dist"
 
-if FRONTEND_DIST.exists() and (FRONTEND_DIST / "index.html").exists():
-    if (FRONTEND_DIST / "assets").exists():
-        app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIST / "assets")), name="assets")
+SERVE_DIR = STATIC_DIR if (STATIC_DIR.exists() and (STATIC_DIR / "index.html").exists()) else FRONTEND_DIST
+
+if SERVE_DIR.exists() and (SERVE_DIR / "index.html").exists():
+    if (SERVE_DIR / "assets").exists():
+        app.mount("/assets", StaticFiles(directory=str(SERVE_DIR / "assets")), name="assets")
 
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
-        file_path = FRONTEND_DIST / full_path
+        file_path = SERVE_DIR / full_path
         if full_path and file_path.exists() and file_path.is_file():
             return FileResponse(file_path)
-        return FileResponse(FRONTEND_DIST / "index.html")
+        return FileResponse(SERVE_DIR / "index.html")
 else:
     @app.get("/")
     def root():
